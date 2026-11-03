@@ -8,9 +8,9 @@ import java.util.Scanner;
 public class StudentManagementSystem {
     static final Scanner sc = new Scanner(System.in);
 
-    // ===================== DATABASE CONNECTION (same file) =====================
+    
     static class DBConnection {
-        // Change these 3 values to match your MySQL setup
+        
         private static final String URL = "jdbc:mysql://localhost:3306/student_management";
         private static final String USER = "root";
         private static final String PASSWORD = "Krishna@333";
@@ -19,7 +19,7 @@ public class StudentManagementSystem {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         }
     }
-    // ===========================================================================
+    
 
     public static void main(String[] args) {
         try (Connection con = DBConnection.getConnection()) {
