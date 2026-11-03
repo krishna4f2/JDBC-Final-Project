@@ -17,7 +17,7 @@ public class MovieTicketBooking {
     static final int MAX_SEATS_PER_BOOKING = 6;
     static final int CLEANING_GAP_MIN = 15;   // gap needed between two shows in the same theater
  
-    // ===================== DATABASE CONNECTION =====================
+    
     static class DBConnection {
         private static final String URL = "jdbc:mysql://localhost:3306/moviedb";
         private static final String USER = "root";
@@ -28,7 +28,7 @@ public class MovieTicketBooking {
         }
     }
  
-    // ===================== MAIN MENU =====================
+    
     public static void main(String[] args) {
         try (Connection con = DBConnection.getConnection()) {
             System.out.println("Connected to MySQL successfully.");
@@ -64,7 +64,7 @@ public class MovieTicketBooking {
         }
     }
  
-    // ===================== INPUT HELPERS (with validation) =====================
+    
     static String readText(String label, int maxLength) {
         while (true) {
             System.out.print(label);
@@ -149,7 +149,7 @@ public class MovieTicketBooking {
         }
     }
  
-    // ===================== MODULE 1 : MOVIE LISTING =====================
+    
     static void addMovie(Connection con) throws SQLException {
         String title = readText("Title: ", 100);
         String genre = readLetters("Genre: ", 30);
@@ -174,7 +174,7 @@ public class MovieTicketBooking {
         }
     }
  
-    // ===================== MODULE 2 : THEATER MANAGEMENT =====================
+    
     static void addTheater(Connection con) throws SQLException {
         String name = readText("Theater name: ", 60);
         String city = readLetters("City: ", 40);
@@ -213,8 +213,7 @@ public class MovieTicketBooking {
         }
     }
  
-    // ===================== SHOWS =====================
-    /** Adds a show inside a transaction: the theater row is locked so two admins cannot create overlapping shows. */
+    
     static void addShow(Connection con) throws SQLException {
         int movieId = readInt("Movie ID: ", 1, Integer.MAX_VALUE);
         int theaterId = readInt("Theater ID: ", 1, Integer.MAX_VALUE);
@@ -289,7 +288,7 @@ public class MovieTicketBooking {
         }
     }
  
-    // ===================== MODULE 3 : SEAT BOOKING =====================
+
     static Set<String> takenSeats(Connection con, int showId) throws SQLException {
         Set<String> taken = new HashSet<>();
         try (PreparedStatement ps = con.prepareStatement("SELECT seat_number FROM bookings WHERE show_id=?")) {
@@ -299,7 +298,7 @@ public class MovieTicketBooking {
         return taken;
     }
  
-    /** Prints the seat layout. Returns false if the show does not exist. */
+    
     static boolean seatMap(Connection con, int showId) throws SQLException {
         int rows, cols;
         String sql = "SELECT t.total_rows, t.seats_per_row FROM shows s JOIN theaters t ON t.theater_id=s.theater_id WHERE s.show_id=?";
@@ -325,7 +324,7 @@ public class MovieTicketBooking {
         return true;
     }
  
-    /** "a1, A2,b05" -> [A1, A2, B5]. Checks format, duplicates and the max seats per booking. */
+    
     static List<String> parseSeats(String raw) {
         List<String> seats = new ArrayList<>();
         Set<String> seen = new HashSet<>();
@@ -358,13 +357,7 @@ public class MovieTicketBooking {
         printTicket(con, ref);
     }
  
-    /**
-     * TRANSACTION + SEAT VALIDATION
-     *  1. lock the show row (FOR UPDATE) so two customers cannot book the same show at the same instant
-     *  2. validate: show exists and is in the future, every seat exists in the theater layout, no seat already booked
-     *  3. insert all seats as one batch; commit. If anything fails, rollback so NO seat is booked (all or nothing).
-     *  The UNIQUE(show_id, seat_number) constraint is a final safety net at the database level.
-     */
+   
     static String bookSeats(Connection con, int showId, String name, String phone, List<String> seats) throws SQLException {
         boolean oldAutoCommit = con.getAutoCommit();
         String ref = "TKT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -424,7 +417,7 @@ public class MovieTicketBooking {
         }
     }
  
-    // ===================== MODULE 4 : TICKET GENERATION =====================
+    
     static void printTicket(Connection con, String ref) throws SQLException {
         String sql = "SELECT b.customer_name, b.phone, b.seat_number, b.price, b.booked_at, " +
                      "m.title, m.movie_language, t.name, t.city, s.show_date, s.show_time " +
