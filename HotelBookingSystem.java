@@ -13,7 +13,7 @@ public class HotelBookingSystem {
     static final int MAX_STAY_NIGHTS = 30;
     static final int MAX_ADVANCE_DAYS = 365;
 
-    // ===================== DB CONNECTION =====================
+    
     static class DBConnection {
         private static final String URL = "jdbc:mysql://localhost:3306/hoteldb";
         private static final String USER = "root";
@@ -24,7 +24,7 @@ public class HotelBookingSystem {
         }
     }
 
-    // ============================== MAIN ==============================
+     
     public static void main(String[] args) {
         try (Connection con = DBConnection.getConnection()) {
             System.out.println("Connected to MySQL successfully.");
@@ -61,7 +61,7 @@ public class HotelBookingSystem {
         }
     }
 
-    // ========================= INPUT HELPERS =========================
+    
     static String readText(String label, int maxLength) {
         while (true) {
             System.out.print(label);
@@ -109,7 +109,7 @@ public class HotelBookingSystem {
         }
     }
 
-    // ----- date helpers -----
+    
     static LocalDate parseDate(String label) {
         while (true) {
             String raw = readText(label, 10);
@@ -148,7 +148,7 @@ public class HotelBookingSystem {
         }
     }
 
-    // ============================ ROOMS ============================
+    
     static void addRoom(Connection con) throws SQLException {
         String number = readText("Room number (3-4 digits): ", 4);
         if (!number.matches("[1-9][0-9]{2,3}")) { System.out.println("Room number must be 3 or 4 digits."); return; }
@@ -173,11 +173,7 @@ public class HotelBookingSystem {
         }
     }
 
-    /**
-     * Room availability (date operation):
-     * two stays overlap when existing.check_in < new.check_out AND existing.check_out > new.check_in
-     * so a guest leaving on the 10th does not block a guest arriving on the 10th.
-     */
+
     static void checkAvailability(Connection con) throws SQLException {
         LocalDate in = readCheckIn();
         LocalDate out = readCheckOut(in);
@@ -200,7 +196,7 @@ public class HotelBookingSystem {
         }
     }
 
-    // =========================== CUSTOMERS ===========================
+    
     static void registerCustomer(Connection con) throws SQLException {
         String name = readText("Customer name: ", 100);
         if (!name.matches("[\\p{L} .'-]{2,}")) { System.out.println("Name must contain letters and spaces/punctuation only (min 2 characters)."); return; }
@@ -227,8 +223,8 @@ public class HotelBookingSystem {
         }
     }
 
-    // ============================ BOOKING ============================
-    /** Transaction: lock room row, validate, check overlap, insert, commit. */
+    
+    
     static void bookRoom(Connection con) throws SQLException {
         int customerId = readInt("Customer ID: ", 1, Integer.MAX_VALUE);
         int roomId = readInt("Room ID: ", 1, Integer.MAX_VALUE);
@@ -281,7 +277,7 @@ public class HotelBookingSystem {
         } finally { con.setAutoCommit(oldAutoCommit); }
     }
 
-    // ============================ CHECK-IN ============================
+    
     static void checkIn(Connection con) throws SQLException {
         int id = readInt("Booking ID: ", 1, Integer.MAX_VALUE);
         boolean oldAutoCommit = con.getAutoCommit();
@@ -311,8 +307,7 @@ public class HotelBookingSystem {
         } finally { con.setAutoCommit(oldAutoCommit); }
     }
 
-    // ===================== CHECK-OUT + BILLING =====================
-    /** Transaction: calculate final bill, save it and mark CHECKED_OUT together. */
+    
     static void checkOut(Connection con) throws SQLException {
         int id = readInt("Booking ID: ", 1, Integer.MAX_VALUE);
         boolean oldAutoCommit = con.getAutoCommit();
@@ -369,7 +364,7 @@ public class HotelBookingSystem {
         }
     }
 
-    /** Late check-out charges extra nights; early check-out still pays booked nights; minimum 1 night. */
+    
     static long billedNights(LocalDate checkIn, LocalDate plannedOut, LocalDate actualOut) {
         LocalDate end = actualOut.isAfter(plannedOut) ? actualOut : plannedOut;
         return Math.max(1, ChronoUnit.DAYS.between(checkIn, end));
@@ -399,7 +394,7 @@ public class HotelBookingSystem {
         System.out.println("================================");
     }
 
-    // ===================== CANCEL + VIEW BOOKINGS =====================
+    
     static void cancelBooking(Connection con) throws SQLException {
         int id = readInt("Booking ID to cancel: ", 1, Integer.MAX_VALUE);
         if (!exists(con, "SELECT 1 FROM bookings WHERE booking_id=?", id)) { System.out.println("Booking not found."); return; }
